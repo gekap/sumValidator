@@ -8,6 +8,18 @@ It take as argument the sum file (MD5 or SHA256) read the hashes and the files.
 
 Then it create a hash file from the one you have download and compare it with the one from the file.
 
+The sum file and the file you have download must be on the same folder else the script will not be able to validate it.
+
+Usage: sumValidator [-h] [-version] filename
+
+positional arguments:
+  filename    Accept md5 or sha256 sum file as parameter
+
+optional arguments:
+  -h, --help  show this help message and exit
+  -version    show program's version number and exit
+
+
 Examples:
 
 $ python sumValidator.py ~/Downloads/iso/sha256sum.txt 
