@@ -32,6 +32,26 @@ def checkMD5():
             print "Not verified ",getFile
 
 
+def checkSingle(singleFile, ext):
+    extens = ext
+    getFileName = singleFile
+    verified = ""
+    return_sha = hashlib.sha256(open(getFileName, 'rb').read()).hexdigest()
+    fullFileName = getFileName + extens
+    with open(fullFileName) as f:
+        for line in f:
+            if return_sha in line:
+                verified = True
+                break
+            else:
+                verified = False
+
+    if verified is True:
+        print "Verified ", singleFile
+    else:
+        print "Not verified ", singleFile
+
+
 getFileName = ""
 res = {}
 searchAsteriscDot = '*.'
@@ -47,6 +67,13 @@ if args.file:
     getFileName = args.file
 if getFileName == "":
     usage()
+
+
+FileName, Ext = os.path.splitext(getFileName)
+
+if Ext == ".sha256":
+    checkSingle(FileName, Ext)
+    sys.exit()
 
 
 path, fileName = os.path.split(getFileName)
