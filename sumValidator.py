@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python2.7
 
 import sys
 import argparse
@@ -20,55 +20,22 @@ def usage():
 
 
 def checkMD5():
-    for key in saveOutput:
-        getFile = saveOutput.get(key)
+    for key in res:
+        getFile = res.get(key)
         if os.path.isfile(getFile) is False:
             continue
 
         return_md5 = hashlib.md5(open(getFile, 'rb').read()).hexdigest()
-        if return_md5 in saveOutput.keys():
+        if return_md5 in res.keys():
             print "Verified ",getFile
         else:
             print "Not verified ",getFile
-	
-	
-def checkSHA256():
-    for key in saveOutput:
-        getFile = saveOutput.get(key)
-        if os.path.isfile(getFile) is False:
-            continue
-
-        return_sha = hashlib.sha256(open(getFile, 'rb').read()).hexdigest()
-        if return_sha in saveOutput.keys():
-            print "Verified ",getFile
-        else:
-            print "Not verified ",getFile
-
-def checkSingle(singleFile, ext):
-    extens = ext
-    getFileName = singleFile
-    verified = ""
-    return_sha = hashlib.sha256(open(getFileName, 'rb').read()).hexdigest()
-    fullFileName = getFileName + extens
-    with open(fullFileName) as f:
-        for line in f:
-            if return_sha in line:
-                verified = True
-                break
-            else:
-                verified = False
-
-    if verified is True:
-        print "Verified ", singleFile
-    else:
-        print "Not verified ", singleFile
-
 
 
 getFileName = ""
-saveOutput = {}
+res = {}
 searchAsteriscDot = '*.'
-searchAsterisc = '*'
+searchDot = '.'
 
 parser = argparse.ArgumentParser(prog='sumValidator')
 parser.add_argument("file", metavar='filename', help="Accept md5 or sha256 sum file as parameter")
@@ -82,65 +49,49 @@ if getFileName == "":
     usage()
 
 
-FileName, Ext = os.path.splitext(getFileName)
-
-if Ext == ".sha256":
-    checkSingle(FileName, Ext)
-    sys.exit()
-
-
 path, fileName = os.path.split(getFileName)
 
 if path == "":
     files = open(os.path.realpath(getFileName), "r")
-    getFullPath = os.path.dirname(os.path.realpath(getFileName))
+    getFullPath = os.path.dirname(os.path.realpath(getFileName)) + "/"
+    print "File: ",getFileName," Path Empty: ",getFullPath
 else:
     localFileName = path+"/"+fileName
     files = open(localFileName, "r")
     getFullPath = path + "/"
     getFileName = fileName
-    #print "File: ",getFileName," Path: ",getFullPath
+    print "File: ",getFileName," Path NE: ",getFullPath
+
 
 for line in files:
-    x = line.split()
-    fileName = x[0]
-    checkSum = x[1]
-    saveOutput[fileName] = checkSum
+    key, value = line.split()
+    res[key] = value
 
-
-#Remove the *. from the fullpaths
-
-for key, value in saveOutput.items():
     results = value.find(searchAsteriscDot)
-    if results != "-1":
-        cFileName = re.sub(r'^\*.', getFullPath, value)
-        saveOutput[key] = cFileName
+    resultsDot = value.find(searchDot)
 
-    return_asterisc = value.find(searchAsterisc)
-    if return_asterisc != "-1":
-        cFileName = re.sub(r'\*', getFullPath, value)
-        saveOutput[key] = cFileName
-		
+    if results != -1 or resultsDot != -1:
+        cFileName = re.sub(r'^\*./|^\./', getFullPath, value)
+        res[key] = cFileName
+    else:
+        cFileName = getFullPath+ "/" +value
+        res[key] = cFileName
+
 
 sumFileName, sumExt = os.path.splitext(getFileName)
 
 if sumExt == "" or sumExt == ".txt":
     searchSum = "sum"
     result = sumFileName.lower().find(searchSum)
-    if result == 6:
-        findHash = re.sub(r'sum', '', sumFileName.lower())
-    elif result == 3:
-        findHash = re.sub(r'sums', '', sumFileName.lower())
+
+    if result == 6 or result == 3:
+        findHash = re.sub(r'sum|[s]', '', sumFileName.lower())
     else:
         findHash = sumFileName
 
-
 if sumExt == ".sum":
     findHash = sumFileName
-
 if findHash.lower() == "md5":
     checkMD5()
-	
 if findHash.lower() == "sha256":
     checkSHA256()
-
